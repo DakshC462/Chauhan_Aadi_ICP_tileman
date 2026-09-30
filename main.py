@@ -32,7 +32,7 @@ class Game:#something that contains objects, organized
 
     def load_data(self,map):
         self.game_dir=path.dirname(__file__)
-        self.img_dir = path.join(self.game_dir, 'images')
+        self.img_dir = path.join(self.game_dir, 'images')#sets up image directory
         self.snd_dir = path.join(self.game_dir, 'audio')
         self.map = Map(path.join(self.game_dir,map))
 
