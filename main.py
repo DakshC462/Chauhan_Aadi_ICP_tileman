@@ -30,7 +30,7 @@ class Game:#something that contains objects, organized
         self.playing=True#actual game being played
         self.clock = pg.time.Clock()
 
-    def load_data(self,map):
+    def load_data(self,map):#loads image and audio folders into program
         self.game_dir=path.dirname(__file__)
         self.img_dir = path.join(self.game_dir, 'images')#sets up image directory
         self.snd_dir = path.join(self.game_dir, 'audio')
@@ -45,13 +45,14 @@ class Game:#something that contains objects, organized
         #self.cactus = Wall(self, 2, 0)
         #self.enemy = Mob(self, 5, 0)
 
-        for row, tiles in enumerate(self.map.data):
+        for row, tiles in enumerate(self.map.data):#pulling out mobs and walls from text map and putting onto screen
             for col, tile, in enumerate(tiles):
                 if tile=='1':
                     Wall(self,col,row)
                 if tile=="M":
+                    #Mob(self,col, row)
                     pass
-        for row, tiles in enumerate(self.map.data):
+        for row, tiles in enumerate(self.map.data):#pulling out player from text map and putting onto screen
             for col, tile, in enumerate(tiles):
                 if tile=='P':
                     Player(self,col,row)

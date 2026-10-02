@@ -2,7 +2,7 @@ import pygame as pg
 from settings import *
 from math import floor
  
-class Map:
+class Map:#using text map, taking each element, and pasting it on screen
     def __init__(self,filename):
         self.data=[]
         with open(filename, 'rt') as f:
@@ -14,11 +14,11 @@ class Map:
         self.height=self.tileheight*TILESIZE
         print('map instantiated')
 
-class Spritesheet:
+class Spritesheet:#access spritesheet for use in other parts of code
     def __init__(self, filename): #initializing the image into the game
         self.spritesheet = pg.image.load(filename).convert()
  
-    def get_image(self, x, y, width, height):
+    def get_image(self, x, y, width, height):#retrieving image from file
         image = pg.Surface((width, height))
         image.blit(self.spritesheet, (0,0), (x,y, width, height))
         new_image = pg.transform.scale(image,(width, height))

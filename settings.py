@@ -1,5 +1,5 @@
 import pygame as pg
-
+#straightforward, just constants to use for the rest of the program
 WIDTH=1024 
 HEIGHT=768
 TITLE = "Best Game Ever!!!"
