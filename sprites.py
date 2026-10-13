@@ -60,17 +60,20 @@ class Player(Sprite):
         #frames for animation
         self.last_update = 0
         self.current_frame = 0
+        self.dir = "none"
     
     def get_keys(self):
         # reset v to 0
         # listen for event specific to keys pressed
         # change velocity based on which key is pressed
         self.vel = vec(0,0)
+        self.dir = "none"
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT] or keys[pg.K_a]:#if left arrow or a, move left
             self.vel.x = -PLAYER_SPEED
             #self.vx = -PLAYER_SPEED
         if keys[pg.K_RIGHT] or keys[pg.K_d]:#if right arrow or d, move right
+            self.dir = "right"
             self.vel.x = PLAYER_SPEED
             #self.vx = PLAYER_SPEED
         if keys[pg.K_UP] or keys[pg.K_w]:#up on up arrow key or w key
@@ -89,18 +92,24 @@ class Player(Sprite):
     def animate(self):
         # use the time element to get now
         now = pg.time.get_ticks()
-        if now - self.last_update > 350:
-            self.last_update = now#updating frame so we can loop through
-            self.current_frame = (self.current_frame + 1) % len(self.idle_frames)
-            bottom = self.rect.bottom
-            self.image = self.idle_frames[self.current_frame]
-            self.rect = self.image.get_rect()
-            self.rect.bottom = bottom
+        if self.dir == "none":
+            if now - self.last_update > 350:
+                self.last_update = now
+                self.current_frame = (self.current_frame + 1) % len(self.idle_frames)
+                bottom = self.rect.bottom
+                self.image = self.idle_frames[self.current_frame]
+                self.image.set_colorkey(BLACK)
+                self.rect = self.image.get_rect()
+                self.rect.bottom = bottom
+        elif self.dir == "right":
+            pass
     def load_images(self):#loading images from spritesheet. Each image is one tilesize apart, and their dimensions are one tilesize long, allowing us to go through sprite sheet and access full image
         self.idle_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE),
                             self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)
                             ]
-
+        self.run_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE),
+                            self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)
+                            ]
     def update(self):
         self.get_keys()#keys for movement
         self.animate()#loop through character states
@@ -133,23 +142,77 @@ class Mob(Sprite):#another sprite that is a green wall, comments and format copi
         self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self, self.groups)
         self.game = game
-        self.image=pg.Surface((TILESIZE, TILESIZE))
+        self.spritesheet = Spritesheet(path.join(self.game.img_dir, "sprite_sheet.png"))
+        self.load_images()
+        self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(RED)
+        self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
+        # self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.speed = 1
-        self.vx, self.vy = 500, 0
+        self.vx, self.vy = 500,0
+        self.speed = 100
+        self.vel = vec(0,0)
+        self.pos = vec(x*TILESIZE,y*TILESIZE)
         self.x = x*TILESIZE
         self.y = y*TILESIZE
-        self.rect.x=self.x
-        self.rect.y=self.y
-        
-        print("mob initialized")
-    def update(self):#moving left to right, boucing off of end, going down, and moving right to left
-        if self.rect.right > WIDTH or self.rect.x < 0:#collision with right side of map or left side of map
-            self.speed *= -1#switch direction
-            self.y += TILESIZE#go down one tilesize, 32 pixel, row
-        #movement in x and y for mob
-        self.x += self.vx * self.game.dt * self.speed
-        self.rect.x = self.x 
-        self.y += self.vy * self.game.dt * self.speed
+        self.rect.x = self.x
         self.rect.y = self.y
+
+        self.dir = "none"
+        self.last_update = 0
+        self.current_frame = 0
+        self.hit_rect = MOB_HIT_RECT
+        print("mob initialized")
+        print(self.rect.x)
+        print(self.rect.y)
+
+    def load_images(self):
+            self.idle_frames = [self.spritesheet.get_image(64,0,TILESIZE, TILESIZE),
+                                self.spritesheet.get_image(96,0,TILESIZE, TILESIZE)
+                                ]
+            self.run_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE),
+                                self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)
+                                ]    
+    def animate(self):
+            # use the time element to get now
+            now = pg.time.get_ticks()
+            if self.dir == "none":
+                if now - self.last_update > 350:
+                    self.last_update = now
+                    self.current_frame = (self.current_frame + 1) % len(self.idle_frames)
+                    bottom = self.rect.bottom
+                    self.image = self.idle_frames[self.current_frame]
+                    self.image.set_colorkey(BLACK)
+                    self.rect = self.image.get_rect()
+                    self.rect.bottom = bottom
+            elif self.dir == "right":
+                pass
+    def chase(self, obj):
+        if self.pos.x < obj.pos.x:
+            self.vel.x = self.speed
+            self.dir = "right"
+        elif self.pos.x > obj.pos.x:
+            self.vel.x = -self.speed
+            self.dir = "left"
+        else:
+            self.vel.x = 0
+
+        if self.pos.y < obj.pos.y:
+            self.vel.y = self.speed
+        elif self.pos.y > obj.pos.y:
+            self.vel.y = -self.speed
+        else:
+            self.vel.y = 0
+    
+    def update(self):#moving left to right, boucing off of end, going down, and moving right to left
+        self.animate()
+        if self.game.player:
+            self.chase(self.game.player)
+        self.rect.center = self.pos
+        self.pos += self.vel * self.game.dt
+        self.hit_rect.centerx = self.pos.x
+        collide_with_walls(self, self.game.all_walls, 'x')
+        self.hit_rect.centery = self.pos.y
+        collide_with_walls(self, self.game.all_walls, 'y')
+        self.rect.center = self.hit_rect.center

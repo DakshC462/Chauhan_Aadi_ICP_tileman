@@ -16,7 +16,13 @@ location, volume button, microphone
 Process: cursor position, position of the player, score, enemy position, 
 velocity, aim in FPS, 
 
-Output:Graphics - things are drawn, sound, haptics, 
+Output:Graphics - things are drawn, sound, haptics
+
+GAME: CS:GO
+
+GOAL: Kill everyone on the other team, terrorist team needs to plant bomb on good team, defuse the bomb
+
+RULES: 
 '''
 
 class Game:#something that contains objects, organized
@@ -50,12 +56,11 @@ class Game:#something that contains objects, organized
                 if tile=='1':
                     Wall(self,col,row)
                 if tile=="M":
-                    #Mob(self,col, row)
-                    pass
+                    Mob(self,col, row)
         for row, tiles in enumerate(self.map.data):#pulling out player from text map and putting onto screen
             for col, tile, in enumerate(tiles):
                 if tile=='P':
-                    Player(self,col,row)
+                    self.player = Player(self, col, row)
 
     def run(self):#running the events/doing the drawing onto the screen
         self.playing = True
@@ -72,12 +77,23 @@ class Game:#something that contains objects, organized
                     self.playing = False
                 self.running=False
 
+    def draw_text(self, text, size, color, x, y):
+        font_name = pg.font.match_font('arial')
+        font = pg.font.Font(font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.midtop = (x,y)
+        self.screen.blit(text_surface, text_rect)
+
     def update(self):#updating sprite location when it receives an input
         self.all_sprites.update()
 
-    def draw(self):#draw the screen and the sprites on the screen
+    def draw(self):
+        # this order matters: the first things are on the bottom because they are the firs to be drawn
+        # the last lines in this method are drawn on top or last
         self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)
+        self.draw_text("Frames per second: " + str(floor(1/self.dt) ), 24, WHITE, WIDTH/2, HEIGHT/4)
         pg.display.flip()
 
 if __name__ == "__main__":
