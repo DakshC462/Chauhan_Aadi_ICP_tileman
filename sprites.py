@@ -61,6 +61,7 @@ class Player(Sprite):
         self.last_update = 0
         self.current_frame = 0
         self.dir = "none"
+        self.coins = 0
     
     def get_keys(self):
         # reset v to 0
@@ -112,6 +113,9 @@ class Player(Sprite):
                             ]
     def update(self):
         self.get_keys()#keys for movement
+        hits = pg.sprite.spritecollide(self, self.game.all_coins, True)
+        if hits:
+            self.coins += 1
         self.animate()#loop through character states
         self.rect.center = self.pos#position of sprite is center instead of top left corner
         self.pos += self.vel * self.game.dt#movement
@@ -121,6 +125,25 @@ class Player(Sprite):
         collide_with_walls(self, self.game.all_walls, 'y')#y collisions - up or down
         self.rect.center = self.hit_rect.center#colliding with center, not corners
         
+class Coin(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_coins
+        Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE, TILESIZE))
+        # self.image.fill(RED)
+        pg.draw.circle(self.image, (YELLOW), (16, 16), 16)
+        self.rect = self.image.get_rect()
+        self.image.set_colorkey(BLACK)
+        self.x = x*TILESIZE
+        self.y = y*TILESIZE
+        self.rect.x = self.x
+        self.rect.y = self.y
+        # print("wall initialized")
+        print(self.rect.x)
+        print(self.rect.y)
+    def update(self):
+        pass
 
 class Wall(Sprite):#another sprite that is a green wall, comments and format copied from player
     def __init__(self, game, x, y):
@@ -207,8 +230,7 @@ class Mob(Sprite):#another sprite that is a green wall, comments and format copi
     
     def update(self):#moving left to right, boucing off of end, going down, and moving right to left
         self.animate()
-        if self.game.player:
-            self.chase(self.game.player)
+        self.chase(self.game.player)
         self.rect.center = self.pos
         self.pos += self.vel * self.game.dt
         self.hit_rect.centerx = self.pos.x
