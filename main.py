@@ -54,11 +54,11 @@ class Game:#something that contains objects, organized
 
         for row, tiles in enumerate(self.map.data):#pulling out mobs and walls from text map and putting onto screen
             for col, tile, in enumerate(tiles):
-                if tile=='1':
+                if tile=='1':#wall from map
                     Wall(self,col,row)
-                if tile=="M":
+                if tile=="M":#mob from map
                     Mob(self,col, row)
-                if tile == 'C':
+                if tile == 'C':#coin from map
                     Coin(self, col, row)
         for row, tiles in enumerate(self.map.data):#pulling out player from text map and putting onto screen
             for col, tile, in enumerate(tiles):
@@ -67,7 +67,7 @@ class Game:#something that contains objects, organized
 
     def run(self):#running the events/doing the drawing onto the screen
         self.playing = True
-        while self.playing:
+        while self.playing:#running game with ticks
             self.dt = self.clock.tick(FPS)/1000
             self.events()
             self.update()
@@ -80,7 +80,7 @@ class Game:#something that contains objects, organized
                     self.playing = False
                 self.running=False
 
-    def draw_text(self, text, size, color, x, y):
+    def draw_text(self, text, size, color, x, y):#text on screen settings with location and font
         font_name = pg.font.match_font('arial')
         font = pg.font.Font(font_name, size)
         text_surface = font.render(text, True, color)
@@ -92,7 +92,7 @@ class Game:#something that contains objects, organized
         self.all_sprites.update()
 
     def draw(self):
-        # this order matters: the first things are on the bottom because they are the firs to be drawn
+        # this order matters: the first things are on the bottom because they are the first to be drawn
         # the last lines in this method are drawn on top or last
         self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)

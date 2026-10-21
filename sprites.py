@@ -24,7 +24,7 @@ def collide_with_walls(sprite, group, dir):#collision physics
                 # reposition the player (sprite) to the right side of the wall
                 sprite.pos.x = hits[0].rect.right + sprite.hit_rect.width / 2 
             sprite.vel.x = 0
-            sprite.hit_rect.centerx = sprite.pos.x
+            sprite.hit_rect.centerx = sprite.pos.x#collision location on sprite to decide where hits are happening from x
     if dir == 'y':
         # checking to see if we've collided with hitrects from top or bottom
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
@@ -38,7 +38,7 @@ def collide_with_walls(sprite, group, dir):#collision physics
                 #reposition to bottom of wall
                 sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2 
             sprite.vel.y = 0#reset velocity after collision
-            sprite.hit_rect.centery = sprite.pos.y
+            sprite.hit_rect.centery = sprite.pos.y#collision location on sprite to decide where hits are happening from x
 
 class Player(Sprite):
     def __init__(self, game, x, y):#player class initialized, init runs once
@@ -55,7 +55,7 @@ class Player(Sprite):
         self.rect = self.image.get_rect()
         self.hit_rect = PLAYER_HIT_RECT
         #player base speed
-        self.vel = vec(0,0)
+        self.vel = vec(0,0)#starting at 0
         self.pos = vec(x*TILESIZE,y*TILESIZE)
         #frames for animation
         self.last_update = 0
@@ -93,13 +93,13 @@ class Player(Sprite):
     def animate(self):
         # use the time element to get now
         now = pg.time.get_ticks()
-        if self.dir == "none":
+        if self.dir == "none":#not moving
             if now - self.last_update > 350:
-                self.last_update = now
+                self.last_update = now#resetting current frame
                 self.current_frame = (self.current_frame + 1) % len(self.idle_frames)
                 bottom = self.rect.bottom
-                self.image = self.idle_frames[self.current_frame]
-                self.image.set_colorkey(BLACK)
+                self.image = self.idle_frames[self.current_frame]#shifting through frames
+                self.image.set_colorkey(BLACK)#background to black
                 self.rect = self.image.get_rect()
                 self.rect.bottom = bottom
         elif self.dir == "right":
@@ -125,14 +125,14 @@ class Player(Sprite):
         collide_with_walls(self, self.game.all_walls, 'y')#y collisions - up or down
         self.rect.center = self.hit_rect.center#colliding with center, not corners
         
-class Coin(Sprite):
+class Coin(Sprite):#another sprite that is a coin, comments and format copied from player
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.all_coins
         Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE, TILESIZE))
         # self.image.fill(RED)
-        pg.draw.circle(self.image, (YELLOW), (16, 16), 16)
+        pg.draw.circle(self.image, (YELLOW), (16, 16), 16)#different shape and color that player is here
         self.rect = self.image.get_rect()
         self.image.set_colorkey(BLACK)
         self.x = x*TILESIZE
@@ -161,19 +161,19 @@ class Wall(Sprite):#another sprite that is a green wall, comments and format cop
         print("wall initialized")
 
 class Mob(Sprite):#another sprite that is a green wall, comments and format copied from player
-    def __init__(self, game, x, y):
+    def __init__(self, game, x, y):#basical initilization and attributes
         self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self, self.groups)
         self.game = game
-        self.spritesheet = Spritesheet(path.join(self.game.img_dir, "sprite_sheet.png"))
+        self.spritesheet = Spritesheet(path.join(self.game.img_dir, "sprite_sheet.png"))#getting spritesheet to give mob an image
         self.load_images()
         self.image = pg.Surface((TILESIZE, TILESIZE))
         self.image.fill(RED)
         self.image = self.spritesheet.get_image(0,0,TILESIZE, TILESIZE)
         # self.image.fill(RED)
         self.rect = self.image.get_rect()
-        self.speed = 1
-        self.vx, self.vy = 500,0
+        #self.speed = 1
+        #self.vx, self.vy = 500,0
         self.speed = 100
         self.vel = vec(0,0)
         self.pos = vec(x*TILESIZE,y*TILESIZE)
@@ -190,14 +190,14 @@ class Mob(Sprite):#another sprite that is a green wall, comments and format copi
         print(self.rect.x)
         print(self.rect.y)
 
-    def load_images(self):
+    def load_images(self):#loading images from spritesheet. Each image is one tilesize apart, and their dimensions are one tilesize long, allowing us to go through sprite sheet and access full image
             self.idle_frames = [self.spritesheet.get_image(64,0,TILESIZE, TILESIZE),
                                 self.spritesheet.get_image(96,0,TILESIZE, TILESIZE)
                                 ]
             self.run_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE),
                                 self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)
                                 ]    
-    def animate(self):
+    def animate(self):#same animate as earlier, same comments
             # use the time element to get now
             now = pg.time.get_ticks()
             if self.dir == "none":
@@ -211,7 +211,7 @@ class Mob(Sprite):#another sprite that is a green wall, comments and format copi
                     self.rect.bottom = bottom
             elif self.dir == "right":
                 pass
-    def chase(self, obj):
+    def chase(self, obj):#made by an LLM
         if self.pos.x < obj.pos.x:
             self.vel.x = self.speed
             self.dir = "right"
@@ -228,9 +228,9 @@ class Mob(Sprite):#another sprite that is a green wall, comments and format copi
         else:
             self.vel.y = 0
     
-    def update(self):#moving left to right, boucing off of end, going down, and moving right to left
+    def update(self):#keeping mob in map bounds and chasing player
         self.animate()
-        self.chase(self.game.player)
+        #self.chase(self.game.player)
         self.rect.center = self.pos
         self.pos += self.vel * self.game.dt
         self.hit_rect.centerx = self.pos.x
