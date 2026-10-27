@@ -116,6 +116,8 @@ class Player(Sprite):
         hits = pg.sprite.spritecollide(self, self.game.all_coins, True)
         if hits:
             self.coins += 1
+            self.game.pickup_snd.play()
+            self.game.score += 1
         self.animate()#loop through character states
         self.rect.center = self.pos#position of sprite is center instead of top left corner
         self.pos += self.vel * self.game.dt#movement
@@ -230,7 +232,7 @@ class Mob(Sprite):#another sprite that is a green wall, comments and format copi
     
     def update(self):#keeping mob in map bounds and chasing player
         self.animate()
-        #self.chase(self.game.player)
+        #self.chase(self.game.player) not using chase until it is fixed
         self.rect.center = self.pos
         self.pos += self.vel * self.game.dt
         self.hit_rect.centerx = self.pos.x

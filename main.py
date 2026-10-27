@@ -35,12 +35,32 @@ class Game:#something that contains objects, organized
         self.running=True#game running in the background(pause, home screen)
         self.playing=True#actual game being played
         self.clock = pg.time.Clock()
+        self.high_score = 0
+        self.score = 0
 
     def load_data(self,map):#loads image and audio folders into program
         self.game_dir=path.dirname(__file__)
+        self.game_save_file = path.join(self.game_dir, "highscore.txt")
         self.img_dir = path.join(self.game_dir, 'images')#sets up image directory
+        # sound handling
         self.snd_dir = path.join(self.game_dir, 'audio')
+        self.pickup_snd = pg.mixer.Sound(path.join(self.snd_dir, "pickup.wav"))
         self.map = Map(path.join(self.game_dir,map))
+
+        try:
+            with open(self.game_save_file, 'x', encoding="utf-8") as file:
+                file.write("hello world!")
+            print("file created successfully!")
+
+        except FileExistsError:
+            print("File already exists")
+
+        with open(self.game_save_file, 'r') as file:
+            try:
+                self.high_score = int(file.read())
+            except:
+                # self.high_score = 0
+                print("high score not read...")
 
     def new(self):#adding the sprite to the screen
         self.load_data('level1.txt')
@@ -64,6 +84,8 @@ class Game:#something that contains objects, organized
             for col, tile, in enumerate(tiles):
                 if tile=='P':
                     self.player = Player(self, col, row)
+        pg.mixer.music.load(path.join(self.snd_dir, "Juhani Junkala_Stage 1.ogg"))
+        pg.mixer.music.play(loops=-1)
 
     def run(self):#running the events/doing the drawing onto the screen
         self.playing = True
@@ -76,6 +98,9 @@ class Game:#something that contains objects, organized
     def events(self):#starting and maintaining the screen
         for event in pg.event.get():
             if event.type == pg.QUIT:
+                if self.score > self.high_score:
+                    with open(path.join(self.game_dir, self.game_save_file), 'w') as f:
+                        f.write(str(self.score))
                 if self.playing:
                     self.playing = False
                 self.running=False
@@ -98,6 +123,8 @@ class Game:#something that contains objects, organized
         self.all_sprites.draw(self.screen)
         self.draw_text(f"Frames per second:{1/self.dt}", 24, WHITE, WIDTH/2, HEIGHT/4)
         self.draw_text(f"Coins:{self.player.coins}", 24, WHITE, WIDTH/2, HEIGHT/7)
+        self.draw_text(f"Score:{self.score}", 24, WHITE, WIDTH/2, HEIGHT/8)
+        self.draw_text(f"High Score:{self.high_score}", 24, WHITE, WIDTH/2, HEIGHT/12)
         pg.display.flip()
 
 if __name__ == "__main__":
