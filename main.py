@@ -68,6 +68,7 @@ class Game:#something that contains objects, organized
         self.all_walls = pg.sprite.Group()
         self.all_mobs = pg.sprite.Group()
         self.all_coins = pg.sprite.Group()
+        self.all_particles = pg.sprite.Group()
         #self.player = Player(self, WIDTH/2, HEIGHT/2)
         #self.cactus = Wall(self, 2, 0)
         #self.enemy = Mob(self, 5, 0)

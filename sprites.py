@@ -5,6 +5,8 @@ from utils import *
 
 from os import path
 
+from random import randint
+
 vec = pg.math.Vector2
 
 def collide_hit_rect(one, two):#object that was getting collided with
@@ -94,7 +96,7 @@ class Player(Sprite):
         # use the time element to get now
         now = pg.time.get_ticks()
         if self.dir == "none":#not moving
-            if now - self.last_update > 350:
+            if now - self.last_update > 100000:
                 self.last_update = now#resetting current frame
                 self.current_frame = (self.current_frame + 1) % len(self.idle_frames)
                 bottom = self.rect.bottom
@@ -115,6 +117,8 @@ class Player(Sprite):
         self.get_keys()#keys for movement
         hits = pg.sprite.spritecollide(self, self.game.all_coins, True)
         if hits:
+            for i in range(100):
+                Particle(self.game, hits[0].pos.x, hits[0].pos.y)
             self.coins += 1
             self.game.pickup_snd.play()
             self.game.score += 1
@@ -127,6 +131,36 @@ class Player(Sprite):
         collide_with_walls(self, self.game.all_walls, 'y')#y collisions - up or down
         self.rect.center = self.hit_rect.center#colliding with center, not corners
         
+class Particle(Sprite):
+    def __init__(self, game, x, y):
+        self.groups = game.all_sprites, game.all_particles
+        Sprite.__init__(self, self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE/8, TILESIZE/8))
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+        self.vel = vec(randint(-180,180),randint(-180,180))
+        self.pos = vec(x,y)
+        self.speed = 5
+        self.countdown = Cooldown()
+        self.countdown.event_time = floor(pg.time.get_ticks()/1000)
+        # print(self.pos.x)
+        # print(self.pos.y)
+        # print(str(len(self.game.all_particles)))
+
+    def update(self):
+        self.countdown.ticking()
+
+        self.pos += self.vel * self.speed * self.game.dt
+        # use the countdown to eliminate particles after 2 seconds
+        if self.countdown.delta > 1:
+            self.kill()
+            print("im dead")
+
+        print(self.countdown.delta)
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
+
 class Coin(Sprite):#another sprite that is a coin, comments and format copied from player
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.all_coins
@@ -137,11 +171,13 @@ class Coin(Sprite):#another sprite that is a coin, comments and format copied fr
         pg.draw.circle(self.image, (YELLOW), (16, 16), 16)#different shape and color that player is here
         self.rect = self.image.get_rect()
         self.image.set_colorkey(BLACK)
-        self.x = x*TILESIZE
-        self.y = y*TILESIZE
-        self.rect.x = self.x
-        self.rect.y = self.y
-        # print("wall initialized")
+        self.pos = vec(x*TILESIZE, y*TILESIZE)
+        #self.x = x*TILESIZE
+        #self.y = y*TILESIZE
+        self.rect.x = self.pos.x
+        self.rect.y = self.pos.y
+        self.last_update = 0
+        self.current_frame = 0
         print(self.rect.x)
         print(self.rect.y)
     def update(self):
