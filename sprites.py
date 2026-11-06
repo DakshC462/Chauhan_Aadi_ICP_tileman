@@ -58,7 +58,6 @@ class Player(Sprite):
         self.hit_rect = PLAYER_HIT_RECT
         #player base speed
         self.vel = vec(0,0)#starting at 0
-        self.acc = vec(0,0)
         self.pos = vec(x*TILESIZE,y*TILESIZE)
         #frames for animation
         self.last_update = 0
@@ -71,28 +70,29 @@ class Player(Sprite):
         # reset v to 0
         # listen for event specific to keys pressed
         # change velocity based on which key is pressed
-        #self.vel = vec(0,0)
+        self.vel = vec(0,0)
         self.dir = "none"
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT] or keys[pg.K_a]:#if left arrow or a, move left
-            self.acc.x = -PLAYER_SPEED
-            #self.vel.x = -PLAYER_SPEED
+            #self.acc.x = -PLAYER_SPEED
+            self.vel.x = -PLAYER_SPEED
         if keys[pg.K_RIGHT] or keys[pg.K_d]:#if right arrow or d, move right
             self.dir = "right"
-            self.acc.x = PLAYER_SPEED
-            #self.vel.x = PLAYER_SPEED
+            #self.acc.x = PLAYER_SPEED
+            self.vel.x = PLAYER_SPEED
         if keys[pg.K_UP] or keys[pg.K_w]:#up on up arrow key or w key
-            self.acc.y = -PLAYER_SPEED
-            #self.vel.y = -PLAYER_SPEED#y axis is inverted, going up means you have to minus player speed
+            #self.acc.y = -PLAYER_SPEED
+            self.vel.y = -PLAYER_SPEED#y axis is inverted, going up means you have to minus player speed
         if keys[pg.K_DOWN] or keys[pg.K_s]:#down on down arrow key or s key
-            self.acc.y = PLAYER_SPEED
-            #self.vel.y = PLAYER_SPEED
+            #self.acc.y = PLAYER_SPEED
+            self.vel.y = PLAYER_SPEED
         #check to see if player is moving diagonally
         #if self.vel.x != 0 and self.vel.y != 0:
             #self.vel.normalize() didnt work well
             #self.vel *= 0.7071
         def jump(self):
-            pass
+            if self.vel.x != 0 and self.vel.y != 0:
+                self.vel *= 0.7071
         #x != 0 and self.vy != 0:
         #   self.vx *= 0.7071
         #   self.vy *= 0.7071
@@ -118,14 +118,7 @@ class Player(Sprite):
                             self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)
                             ]
     def update(self):
-        self.acc = vec(0,0)
         self.get_keys()#keys for movement
-        self.animate()
-        self.acc.x += self.vel.x * PLAYER_FRIC
-        self.acc.y += self.vel.y * PLAYER_FRIC
-        self.vel += self.acc
-        self.rect.center = self.pos
-        self.pos += self.vel + 0.5 * self.acc
         hits = pg.sprite.spritecollide(self, self.game.all_coins, True)
         if hits:
             for i in range(25):
@@ -133,6 +126,9 @@ class Player(Sprite):
             self.coins += 1
             self.game.pickup_snd.play()
             self.game.score += 1
+        self.animate()
+        self.rect.center = self.pos
+        self.pos += self.vel * self.game.dt
         self.hit_rect.centerx = self.pos.x
         collide_with_walls(self, self.game.all_walls, 'x')#x collisions - left or right
         self.hit_rect.centery = self.pos.y#colliding with center, not corners
